@@ -224,6 +224,7 @@ class QRViewController {
   bool _hasPermissions;
 
   SystemFeatures get systemFeatures => _features;
+
   bool get hasPermissions => _hasPermissions;
 
   /// Starts the barcode scanner
@@ -237,6 +238,18 @@ class QRViewController {
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
     }
+  }
+
+  /// code: android and iod ; format：android only  rawBytes：android only
+  Future<Barcode> scanWithImagePath(String path) async {
+    final result = await _channel.invokeMapMethod('scanWithImagePath', path);
+    final code = result['code'] as String;
+    final rawType = result['type'] as String;
+    // Raw bytes are only supported by Android.
+    final rawBytes = result['rawBytes'] as List<int>;
+    final format = BarcodeTypesExtension.fromString(rawType);
+    final barcode = Barcode(code, format, rawBytes);
+    return barcode;
   }
 
   /// Gets information about which camera is active.

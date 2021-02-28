@@ -28,6 +28,7 @@ class QRView(messenger: BinaryMessenger, id: Int, private val params: HashMap<St
     private var barcodeView: BarcodeView? = null
     private val channel: MethodChannel = MethodChannel(messenger, "net.touchcapture.qr.flutterqr/qrview_$id")
     private var permissionGranted: Boolean = false
+    private var imageParse: ImageParse = ImageParse()
 
     init {
         if (Shared.binding != null) {
@@ -75,7 +76,7 @@ class QRView(messenger: BinaryMessenger, id: Int, private val params: HashMap<St
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        when(call.method) {
+        when (call.method) {
             "startScan" -> startScan(call.arguments as? List<Int>, result)
             "stopScan" -> stopScan()
             "flipCamera" -> flipCamera(result)
@@ -88,6 +89,7 @@ class QRView(messenger: BinaryMessenger, id: Int, private val params: HashMap<St
             "getCameraInfo" -> getCameraInfo(result)
             "getFlashInfo" -> getFlashInfo(result)
             "getSystemFeatures" -> getSystemFeatures(result)
+            "scanWithImagePath" -> imageParse.parseImage(call, result)
             else -> result.notImplemented()
         }
     }
@@ -108,7 +110,7 @@ class QRView(messenger: BinaryMessenger, id: Int, private val params: HashMap<St
             barcodeView!!.pause()
             val settings = barcodeView!!.cameraSettings
 
-            if(settings.requestedCameraId == CameraInfo.CAMERA_FACING_FRONT)
+            if (settings.requestedCameraId == CameraInfo.CAMERA_FACING_FRONT)
                 settings.requestedCameraId = CameraInfo.CAMERA_FACING_BACK
             else
                 settings.requestedCameraId = CameraInfo.CAMERA_FACING_FRONT
@@ -272,9 +274,9 @@ class QRView(messenger: BinaryMessenger, id: Int, private val params: HashMap<St
         }
     }
 
-    override fun onRequestPermissionsResult( requestCode: Int,
-                                             permissions: Array<out String>?,
-                                             grantResults: IntArray): Boolean {
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                            permissions: Array<out String>?,
+                                            grantResults: IntArray): Boolean {
 
         if (requestCode == Shared.CAMERA_REQUEST_ID && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             permissionGranted = true

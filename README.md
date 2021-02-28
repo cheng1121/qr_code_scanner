@@ -129,6 +129,11 @@ In order to use this plugin, add the following to your Info.plist file:
 <string>This app needs camera access to scan QR codes</string>
 ```
 
+## scanWithImagePath
+```dart
+final Barcode barcode =  await controller.scanWithImagePath(imagePath)
+```
+
 ## Flip Camera (Back/Front)
 The default camera is the back camera.
 ```dart
@@ -153,7 +158,7 @@ await controller.resumeCamera();
 
 
 # SDK
-Requires at least SDK 21 (Android 5.0).
+Requires at least SDK 24 (Android 5.0).
 Requires at least iOS 8.
 
 # TODOs

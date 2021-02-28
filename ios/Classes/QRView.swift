@@ -76,6 +76,9 @@ public class QRView:NSObject,FlutterPlatformView {
                     self?.getFlashInfo(result)
                 case "getSystemFeatures":
                     self?.getSystemFeatures(result)
+            case "scanWithImagePath":
+                let path = call.arguments as! String
+                self?.scanWithImagePath(result: result, imagePath: path )
                 default:
                     result(FlutterMethodNotImplemented)
                     return
@@ -83,6 +86,29 @@ public class QRView:NSObject,FlutterPlatformView {
         })
         return previewView
     }
+    
+    func scanWithImagePath(result: FlutterResult,imagePath: String) {
+        
+        if let image = UIImage.init(contentsOfFile: imagePath){
+            if let decodeImage = CIImage.init(image: image){
+                let detector = CIDetector.init(ofType: CIDetectorTypeQRCode, context: nil, options:[CIDetectorAccuracy:CIDetectorAccuracyLow] )
+                let features = detector?.features(in: decodeImage) ?? []
+                
+                for feature in features{
+                    let qrFeature = feature as? CIQRCodeFeature
+                    let code = ["code": qrFeature?.messageString]
+                    result(code)
+                }
+                
+                
+            }
+        }else{
+            print("not fount image \(imagePath)")
+        }
+       
+        
+    }
+    
     
     func setDimensions(_ result: @escaping FlutterResult, width: Double, height: Double, scanArea: Double, scanAreaOffset: Double) {
         // Then set the size of the preview area.
