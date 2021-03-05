@@ -1,4 +1,7 @@
 # QR Code Scanner
+
+This is an extension of the qr code scanner, adding the function of reading the QR code data from the photo album
+
 [![GH Actions](https://github.com/juliuscanute/qr_code_scanner/workflows/dart/badge.svg)](https://github.com/juliuscanute/qr_code_scanner/actions)
 
 A QR code scanner that works on both iOS and Android by natively embedding the platform view within Flutter. The integration with Flutter is seamless, much better than jumping into a native Activity or a ViewController to perform the scan.
@@ -129,6 +132,11 @@ In order to use this plugin, add the following to your Info.plist file:
 <string>This app needs camera access to scan QR codes</string>
 ```
 
+## scanWithImagePath
+```dart
+final Barcode barcode =  await controller.scanWithImagePath(imagePath)
+```
+
 ## Flip Camera (Back/Front)
 The default camera is the back camera.
 ```dart
@@ -153,7 +161,7 @@ await controller.resumeCamera();
 
 
 # SDK
-Requires at least SDK 21 (Android 5.0).
+Requires at least SDK 24 (Android 5.0).
 Requires at least iOS 8.
 
 # TODOs

@@ -15,8 +15,11 @@ public class QRView:NSObject,FlutterPlatformView {
     var channel: FlutterMethodChannel
     var cameraFacing: MTBCamera
     
+    // Codabar, maxicode, rss14 & rssexpanded not supported. Replaced with qr.
+    // UPCa uses ean13 object.
     var QRCodeTypes = [
           0: AVMetadataObject.ObjectType.aztec,
+          1: AVMetadataObject.ObjectType.qr,
           2: AVMetadataObject.ObjectType.code39,
           3: AVMetadataObject.ObjectType.code93,
           4: AVMetadataObject.ObjectType.code128,
@@ -24,8 +27,12 @@ public class QRView:NSObject,FlutterPlatformView {
           6: AVMetadataObject.ObjectType.ean8,
           7: AVMetadataObject.ObjectType.ean13,
           8: AVMetadataObject.ObjectType.interleaved2of5,
+          9: AVMetadataObject.ObjectType.qr,
           10: AVMetadataObject.ObjectType.pdf417,
           11: AVMetadataObject.ObjectType.qr,
+          12: AVMetadataObject.ObjectType.qr,
+          13: AVMetadataObject.ObjectType.qr,
+          14: AVMetadataObject.ObjectType.ean13,
           15: AVMetadataObject.ObjectType.upce
          ]
     
@@ -69,6 +76,9 @@ public class QRView:NSObject,FlutterPlatformView {
                     self?.getFlashInfo(result)
                 case "getSystemFeatures":
                     self?.getSystemFeatures(result)
+            case "scanWithImagePath":
+                let path = call.arguments as! String
+                self?.scanWithImagePath(result: result, imagePath: path )
                 default:
                     result(FlutterMethodNotImplemented)
                     return
@@ -76,6 +86,29 @@ public class QRView:NSObject,FlutterPlatformView {
         })
         return previewView
     }
+    
+    func scanWithImagePath(result: FlutterResult,imagePath: String) {
+        
+        if let image = UIImage.init(contentsOfFile: imagePath){
+            if let decodeImage = CIImage.init(image: image){
+                let detector = CIDetector.init(ofType: CIDetectorTypeQRCode, context: nil, options:[CIDetectorAccuracy:CIDetectorAccuracyLow] )
+                let features = detector?.features(in: decodeImage) ?? []
+                
+                for feature in features{
+                    let qrFeature = feature as? CIQRCodeFeature
+                    let code = ["code": qrFeature?.messageString]
+                    result(code)
+                }
+                
+                
+            }
+        }else{
+            print("not fount image \(imagePath)")
+        }
+       
+        
+    }
+    
     
     func setDimensions(_ result: @escaping FlutterResult, width: Double, height: Double, scanArea: Double, scanAreaOffset: Double) {
         // Then set the size of the preview area.

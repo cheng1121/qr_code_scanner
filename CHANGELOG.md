@@ -1,4 +1,4 @@
-## 0.4.0-nullsafety.0 
+## 0.4.0-nullsafety.0
 Adds null safety to version 0.3.4.
 
 ## 0.3.4
@@ -24,7 +24,7 @@ Adds null safety to version 0.3.4.
 * Fixed scanArea not being honored on Android.
 * Updated ShapeBorder to QrScannerOverlayShape.
 
-## 0.3.0-nullsafety.0 
+## 0.3.0-nullsafety.0
 Adds null safety to version 0.2.1.
 
 ## 0.3.0
