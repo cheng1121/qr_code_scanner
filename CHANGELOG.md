@@ -1,4 +1,4 @@
-## 0.4.0-nullsafety.0
+## 0.4.0-nullsafety.1
 Adds null safety to version 0.3.4.
 
 ## 0.3.4

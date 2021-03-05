@@ -70,7 +70,7 @@ class _QRViewState extends State<QRView> {
                       overlay: widget.overlay)
                 }
             });
-    WidgetsBinding.instance.addObserver(_observer);
+    WidgetsBinding.instance!.addObserver(_observer);
   }
 
   @override
@@ -88,7 +88,7 @@ class _QRViewState extends State<QRView> {
   @override
   void dispose() {
     super.dispose();
-    WidgetsBinding.instance.removeObserver(_observer);
+    WidgetsBinding.instance!.removeObserver(_observer);
   }
 
   bool onNotification(notification) {
@@ -237,13 +237,13 @@ class QRViewController {
 
   /// code: android and iod ; format：android only  rawBytes：android only
   Future<Barcode> scanWithImagePath(String path) async {
-    final result = await _channel.invokeMapMethod('scanWithImagePath', path);
-    final code = result['code'] as String;
+    final result = await _channel!.invokeMapMethod('scanWithImagePath', path);
+    final code = result!['code'] as String;
     final rawType = result['type'] as String;
     // Raw bytes are only supported by Android.
     final rawBytes = result['rawBytes'] as List<int>;
     final format = BarcodeTypesExtension.fromString(rawType);
-    final barcode = Barcode(code, format, rawBytes);
+    final barcode = Barcode(code, format!, rawBytes);
     return barcode;
   }
 
