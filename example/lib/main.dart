@@ -142,7 +142,7 @@ class _QRViewExampleState extends State<QRViewExample> {
                             if (file != null) {
                               final result = await controller
                                   ?.scanWithImagePath(file.path);
-                              print('result ======= ${result.code}');
+                              print('result ======= ${result!.code}');
                             }
                           },
                           child: Text(

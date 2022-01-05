@@ -108,7 +108,7 @@ private class DecoderThread(val resultHandler: Handler, val imagePath: String) :
         val rawResult = decoder.decode(sourceData.createSource())
         if (rawResult != null) {
             val end = System.currentTimeMillis()
-            Log.i("TAG=====================", "Found barcode int ${end - start}ms")
+            Log.i("TAG==============", "Found barcode int ${end - start}ms")
             val barcodeResult = BarcodeResult(rawResult, sourceData)
             val message = Message.obtain(resultHandler, R.id.zxing_decode_succeeded, barcodeResult)
             val bundle = Bundle()

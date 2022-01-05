@@ -315,6 +315,12 @@ class QRViewControllerWeb implements QRViewController {
     // TODO: implement scanInvert
     throw UnimplementedError();
   }
+
+  @override
+  Future<Barcode> scanWithImagePath(String path) {
+    // TODO: implement scanWithImagePath
+    throw UnimplementedError();
+  }
 }
 
 Widget createWebQrView({onPlatformViewCreated, CameraFacing? cameraFacing}) =>

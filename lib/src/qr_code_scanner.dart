@@ -239,8 +239,8 @@ class QRViewController {
 
   /// code: android and iod ; format：android only  rawBytes：android only
   Future<Barcode> scanWithImagePath(String path) async {
-    final result = await _channel.invokeMapMethod('scanWithImagePath', path);
-    final code = result['code'] as String;
+    final  result = await _channel.invokeMapMethod('scanWithImagePath', path);
+    final code = result!['code'] as String;
     final rawType = result['type'] as String;
     // Raw bytes are only supported by Android.
     final rawBytes = result['rawBytes'] as List<int>;
