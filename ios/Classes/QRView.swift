@@ -56,7 +56,8 @@ public class QRView:NSObject,FlutterPlatformView {
                     self?.setDimensions(result,
                                         width: arguments["width"] ?? 0,
                                         height: arguments["height"] ?? 0,
-                                        scanArea: arguments["scanArea"] ?? 0,
+                                        scanAreaWidth: arguments["scanAreaWidth"] ?? 0,
+                                        scanAreaHeight: arguments["scanAreaHeight"] ?? 0,
                                         scanAreaOffset: arguments["scanAreaOffset"] ?? 0)
                 case "startScan":
                     self?.startScan(call.arguments as! Array<Int>, result)
@@ -86,31 +87,32 @@ public class QRView:NSObject,FlutterPlatformView {
         })
         return previewView
     }
-    
-    func scanWithImagePath(result: FlutterResult,imagePath: String) {
-        
-        if let image = UIImage.init(contentsOfFile: imagePath){
-            if let decodeImage = CIImage.init(image: image){
-                let detector = CIDetector.init(ofType: CIDetectorTypeQRCode, context: nil, options:[CIDetectorAccuracy:CIDetectorAccuracyLow] )
-                let features = detector?.features(in: decodeImage) ?? []
-                
-                for feature in features{
-                    let qrFeature = feature as? CIQRCodeFeature
-                    let code = ["code": qrFeature?.messageString]
-                    result(code)
+
+
+     func scanWithImagePath(result: FlutterResult,imagePath: String) {
+
+            if let image = UIImage.init(contentsOfFile: imagePath){
+                if let decodeImage = CIImage.init(image: image){
+                    let detector = CIDetector.init(ofType: CIDetectorTypeQRCode, context: nil, options:[CIDetectorAccuracy:CIDetectorAccuracyLow] )
+                    let features = detector?.features(in: decodeImage) ?? []
+
+                    for feature in features{
+                        let qrFeature = feature as? CIQRCodeFeature
+                        let code = ["code": qrFeature?.messageString]
+                        result(code)
+                    }
+
+
                 }
-                
-                
+            }else{
+                print("not fount image \(imagePath)")
             }
-        }else{
-            print("not fount image \(imagePath)")
+
+
         }
-       
-        
-    }
-    
-    
-    func setDimensions(_ result: @escaping FlutterResult, width: Double, height: Double, scanArea: Double, scanAreaOffset: Double) {
+
+
+    func setDimensions(_ result: @escaping FlutterResult, width: Double, height: Double, scanAreaWidth: Double, scanAreaHeight: Double, scanAreaOffset: Double) {
         // Then set the size of the preview area.
         previewView.frame = CGRect(x: 0, y: 0, width: width, height: height)
         
@@ -129,9 +131,9 @@ public class QRView:NSObject,FlutterPlatformView {
         }
 
         // Set scanArea if provided.
-        if (scanArea != 0) {
+        if (scanAreaWidth != 0 && scanAreaHeight != 0) {
             scanner?.didStartScanningBlock = {
-                self.scanner?.scanRect = CGRect(x: Double(midX) - (scanArea / 2), y: Double(midY) - (scanArea / 2), width: scanArea, height: scanArea)
+                self.scanner?.scanRect = CGRect(x: Double(midX) - (scanAreaWidth / 2), y: Double(midY) - (scanAreaHeight / 2), width: scanAreaWidth, height: scanAreaHeight)
 
                 // Set offset if provided.
                 if (scanAreaOffset != 0) {
@@ -151,7 +153,11 @@ public class QRView:NSObject,FlutterPlatformView {
         arguments.forEach { arg in
             allowedBarcodeTypes.append( QRCodeTypes[arg]!)
         }
-        MTBBarcodeScanner.requestCameraPermission(success: { permissionGranted in
+        MTBBarcodeScanner.requestCameraPermission(success: { [weak self] permissionGranted in
+            guard let self = self else { return }
+
+            self.channel.invokeMethod("onPermissionSet", arguments: permissionGranted)
+
             if permissionGranted {
                 do {
                     try self.scanner?.startScanning(with: self.cameraFacing, resultBlock: { [weak self] codes in
@@ -173,7 +179,8 @@ public class QRView:NSObject,FlutterPlatformView {
                                         typeString = "EAN_8"
                                     case AVMetadataObject.ObjectType.ean13:
                                         typeString = "EAN_13"
-                                    case AVMetadataObject.ObjectType.itf14:
+                                    case AVMetadataObject.ObjectType.itf14,
+                                         AVMetadataObject.ObjectType.interleaved2of5:
                                         typeString = "ITF"
                                     case AVMetadataObject.ObjectType.pdf417:
                                         typeString = "PDF_417"
@@ -184,8 +191,37 @@ public class QRView:NSObject,FlutterPlatformView {
                                     default:
                                         return
                                 }
-                                guard let stringValue = code.stringValue else { continue }
-                               let result = ["code": stringValue, "type": typeString]
+                                let bytes = { () -> Data? in
+                                    if #available(iOS 11.0, *) {
+                                        switch (code.descriptor) {
+                                        case let qrDescriptor as CIQRCodeDescriptor:
+                                            return qrDescriptor.errorCorrectedPayload
+                                        case let aztecDescriptor as CIAztecCodeDescriptor:
+                                            return aztecDescriptor.errorCorrectedPayload
+                                        case let pdf417Descriptor as CIPDF417CodeDescriptor:
+                                            return pdf417Descriptor.errorCorrectedPayload
+                                        case let dataMatrixDescriptor as CIDataMatrixCodeDescriptor:
+                                            return dataMatrixDescriptor.errorCorrectedPayload
+                                        default:
+                                            return nil
+                                        }
+                                    } else {
+                                        return nil
+                                    }
+                                }()
+                                let result = { () -> [String : Any]? in
+                                    guard let stringValue = code.stringValue else {
+                                        guard let safeBytes = bytes else {
+                                            return nil
+                                        }
+                                        return ["type": typeString, "rawBytes": safeBytes]
+                                    }
+                                    guard let safeBytes = bytes else {
+                                        return ["code": stringValue, "type": typeString]
+                                    }
+                                    return ["code": stringValue, "type": typeString, "rawBytes": safeBytes]
+                                }()
+                                guard result != nil else { continue }
                                 if allowedBarcodeTypes.count == 0 || allowedBarcodeTypes.contains(code.type) {
                                     self?.channel.invokeMethod("onRecognizeQR", arguments: result)
                                 }
@@ -195,8 +231,8 @@ public class QRView:NSObject,FlutterPlatformView {
 
                     })
                 } catch {
-                    let error = FlutterError(code: "unknown-error", message: "Unable to start scanning", details: nil)
-                    return result(error)
+                    let scanError = FlutterError(code: "unknown-error", message: "Unable to start scanning", details: error)
+                    result(scanError)
                 }
             } else {
                 let error = FlutterError(code: "cameraPermission", message: "Permission denied to access the camera", details: nil)

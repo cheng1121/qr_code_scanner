@@ -1,19 +1,10 @@
 # QR Code Scanner
 
-This is an extension of the qr code scanner, adding the function of reading the QR code data from the photo album
-
+[![pub package](https://img.shields.io/pub/v/qr_code_scanner?include_prereleases)](https://pub.dartlang.org/packages/qr_code_scanner)
+[![Join the chat](https://img.shields.io/discord/829004904600961054)](https://discord.gg/aZujk84f6V)
 [![GH Actions](https://github.com/juliuscanute/qr_code_scanner/workflows/dart/badge.svg)](https://github.com/juliuscanute/qr_code_scanner/actions)
 
 A QR code scanner that works on both iOS and Android by natively embedding the platform view within Flutter. The integration with Flutter is seamless, much better than jumping into a native Activity or a ViewController to perform the scan.
-
-# *Warning*
-If you are using Flutter Beta or Dev channel (1.25 or 1.26) you can get the following error:
-
-`java.lang.AbstractMethodError: abstract method "void io.flutter.plugin.platform.PlatformView.onFlutterViewAttached(android.view.View)"`
-
-This is a bug in Flutter which is being tracked here: https://github.com/flutter/flutter/issues/72185
-
-There is a workaround by adding `android.enableDexingArtifactTransform=false` to your `gradle.properties` file.
 
 ## Screenshots
 <table>
@@ -64,8 +55,8 @@ When a QR code is recognized, the text identified will be set in 'result' of typ
 ```dart
 class _QRViewExampleState extends State<QRViewExample> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  Barcode result;
-  QRViewController controller;
+  Barcode? result;
+  QRViewController? controller;
 
   // In order to get hot reload to work we need to pause the camera if the platform
   // is android, or resume the camera if the platform is iOS.
@@ -73,9 +64,9 @@ class _QRViewExampleState extends State<QRViewExample> {
   void reassemble() {
     super.reassemble();
     if (Platform.isAndroid) {
-      controller.pauseCamera();
+      controller!.pauseCamera();
     } else if (Platform.isIOS) {
-      controller.resumeCamera();
+      controller!.resumeCamera();
     }
   }
 
@@ -96,7 +87,7 @@ class _QRViewExampleState extends State<QRViewExample> {
             child: Center(
               child: (result != null)
                   ? Text(
-                      'Barcode Type: ${describeEnum(result.format)}   Data: ${result.code}')
+                      'Barcode Type: ${describeEnum(result!.format)}   Data: ${result!.code}')
                   : Text('Scan a code'),
             ),
           )
@@ -123,6 +114,34 @@ class _QRViewExampleState extends State<QRViewExample> {
 
 ```
 
+## Android Integration
+In order to use this plugin, please update the Gradle, Kotlin and Kotlin Gradle Plugin:
+
+In ```android/build.gradle``` change ```ext.kotlin_version = '1.3.50'``` to ```ext.kotlin_version = '1.5.10'```
+
+In ```android/build.gradle``` change ```classpath 'com.android.tools.build:gradle:3.5.0'``` to ```classpath 'com.android.tools.build:gradle:4.2.0'```
+
+In ```android/gradle/wrapper/gradle-wrapper.properties``` change ```distributionUrl=https\://services.gradle.org/distributions/gradle-5.6.2-all.zip``` to ```distributionUrl=https\://services.gradle.org/distributions/gradle-6.9-all.zip```
+
+In ```android/app/build.gradle``` change
+```defaultConfig{```
+  ```...```
+  ```minSdkVersion 16```
+```}``` to
+```defaultConfig{```
+  ```...```
+  ```minSdkVersion 20```
+```}```
+
+### *Warning*
+If you are using Flutter Beta or Dev channel (1.25 or 1.26) you can get the following error:
+
+`java.lang.AbstractMethodError: abstract method "void io.flutter.plugin.platform.PlatformView.onFlutterViewAttached(android.view.View)"`
+
+This is a bug in Flutter which is being tracked here: https://github.com/flutter/flutter/issues/72185
+
+There is a workaround by adding `android.enableDexingArtifactTransform=false` to your `gradle.properties` file.
+
 ## iOS Integration
 In order to use this plugin, add the following to your Info.plist file:
 ```
@@ -131,6 +150,21 @@ In order to use this plugin, add the following to your Info.plist file:
 <key>NSCameraUsageDescription</key>
 <string>This app needs camera access to scan QR codes</string>
 ```
+
+## Web Integration
+
+Add this to `web/index.html`:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.1/dist/jsQR.min.js"></script>
+```
+
+Please note: on web, only QR codes are supported. Other barcodes and 2D codes cannot be scanned.
+
+Web support is in very early stage. Features such as flash, pause or resume are not implemented. Moreover, the camera
+preview does not respect the surrounding constraints. This is not at last due to Flutter's early state of platform views
+on web.
+
 
 ## scanWithImagePath
 ```dart

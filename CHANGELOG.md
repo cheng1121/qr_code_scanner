@@ -1,3 +1,37 @@
+## 0.6.2
+* Fixed permission error on devices running Android 7 or lower.
+* Updated dependencies
+
+## 0.6.1
+* Fix bug which caused build to fail for iOS. (#452)
+
+## 0.6.0
+#### Features
+* Add support for raw bytes on iOS. (#421)
+* Add custom cutout width and height next to cutout size. (#432)
+
+#### Bugfixes
+* Fix for calling permission multiple times. (#381)
+* Fix for QRView Overlay cutoutbottomoffset. (#383)
+* Multiple minor improvements
+
+## 0.5.2
+#### Bugfixes
+* Increased delay to fix QRView opening zoomed in on some devices by adding small delay to updateDimensions(). (#250)
+* Updated ZXING from 3.3.0 to 3.4.1 (#369)
+* Fixed permission not being called correctly on Android (#351)
+
+## 0.5.1
+Removed web from library export.
+
+## 0.5.0
+* Added initial web-support. This function is still under development and not fully tested.
+* Fixed permissions on iOS.
+* Updated dependencies.
+
+## 0.4.0
+Stable null-safety support. (#278)
+
 ## 0.3.5
 #### Bug fixes
 * Fixed QRView opening zoomed in on some devices by adding small delay to updateDimensions(). (#250)
